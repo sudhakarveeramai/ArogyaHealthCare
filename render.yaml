@@ -1,0 +1,33 @@
+# Render Blueprint Configuration for ArogyaCare
+# Documentation: https://render.com/docs/blueprint-spec
+
+services:
+  - type: web
+    name: arogyacare-offline-triage
+    env: static
+    buildCommand: npm run build
+    staticPublishPath: ./dist
+    pullRequestPreviewsEnabled: false
+    routes:
+      # Single Page Application (SPA) rewrite to handle direct route reloads without 404s
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    headers:
+      # Security and PWA Cache headers
+      - path: /*
+        name: X-Frame-Options
+        value: SAMEORIGIN
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff
+      - path: /*
+        name: Referrer-Policy
+        value: strict-origin-when-cross-origin
+      # Ensure service worker is always fresh
+      - path: /sw.js
+        name: Cache-Control
+        value: no-cache, no-store, must-revalidate
+      - path: /manifest.webmanifest
+        name: Content-Type
+        value: application/manifest+json

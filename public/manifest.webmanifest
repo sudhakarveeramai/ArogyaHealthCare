@@ -1,0 +1,18 @@
+{
+  "name": "ArogyaCare — Rural Offline Symptom Triage",
+  "short_name": "ArogyaCare",
+  "description": "Offline-first AI symptom triage and clinical guidance for rural patients and community health workers.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f8fafc",
+  "theme_color": "#0f766e",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    }
+  ],
+  "categories": ["medical", "health", "utilities"]
+}

@@ -1,12 +1,46 @@
+// PWA helper and install prompt manager
+
+let deferredPrompt: any = null;
+
 export async function registerAppShell() {
-  if (!import.meta.env.PROD || typeof window === "undefined" || window.self !== window.top) return;
-  if (window.location.hostname.startsWith("id-preview--") || window.location.hostname.startsWith("preview--")) return;
-  if (window.location.hostname === "lovableproject.com" || window.location.hostname.endsWith(".lovableproject.com")) return;
-  if (window.location.search.includes("sw=off") || !("serviceWorker" in navigator)) return;
+  if (typeof window === "undefined" || !("serviceWorker" in navigator)) return;
+
+  window.addEventListener("beforeinstallprompt", (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    window.dispatchEvent(new CustomEvent("pwa-installable"));
+  });
 
   try {
-    await navigator.serviceWorker.register("/sw.js", { scope: "/" });
+    const registration = await navigator.serviceWorker.register("/sw.js", { scope: "/" });
+    // Update found
+    registration.onupdatefound = () => {
+      const installingWorker = registration.installing;
+      if (installingWorker) {
+        installingWorker.onstatechange = () => {
+          if (installingWorker.state === "installed" && navigator.serviceWorker.controller) {
+            window.dispatchEvent(new CustomEvent("pwa-updated"));
+          }
+        };
+      }
+    };
+  } catch (err) {
+    console.warn("Service worker registration skipped or failed:", err);
+  }
+}
+
+export function isInstallPromptAvailable(): boolean {
+  return deferredPrompt !== null;
+}
+
+export async function promptPwaInstall(): Promise<boolean> {
+  if (!deferredPrompt) return false;
+  try {
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    deferredPrompt = null;
+    return outcome === "accepted";
   } catch {
-    // The app remains fully usable without a service worker.
+    return false;
   }
 }
